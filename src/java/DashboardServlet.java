@@ -1,70 +1,63 @@
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.ServletException;
+import java.sql.*;
+import java.util.*;
+import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-import javax.servlet.RequestDispatcher;
+import model.Employee;
 
 @WebServlet("/DashboardServlet")
 public class DashboardServlet extends HttpServlet {
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("adminEmail") == null) {
-            response.sendRedirect("index.jsp");
-            return;
-        }
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
 
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            // 1. Total Employees Count
-            int totalEmployees = 0;
-            PreparedStatement countStmt = conn.prepareStatement("SELECT COUNT(*) FROM employees");
-            ResultSet countRs = countStmt.executeQuery();
-            if (countRs.next()) {
-                totalEmployees = countRs.getInt(1);
+        try {
+            conn = DatabaseConnection.getConnection();
+
+            // 1. Get total employee count
+            stmt = conn.prepareStatement("SELECT COUNT(*) FROM employees");
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                request.setAttribute("totalEmployees", rs.getInt(1));
             }
 
-            // 2. Role-wise Distribution
+            // 2. Get role count
+            stmt = conn.prepareStatement("SELECT position, COUNT(*) FROM employees GROUP BY position");
+            rs = stmt.executeQuery();
             Map<String, Integer> roleCount = new HashMap<>();
-            PreparedStatement roleStmt = conn.prepareStatement("SELECT position, COUNT(*) AS count FROM employees GROUP BY position");
-            ResultSet roleRs = roleStmt.executeQuery();
-            while (roleRs.next()) {
-                roleCount.put(roleRs.getString("position"), roleRs.getInt("count"));
+            while (rs.next()) {
+                roleCount.put(rs.getString(1), rs.getInt(2));
             }
-
-            // 3. Recently Added Employees (last 5)
-            ArrayList<String[]> recentEmployees = new ArrayList<>();
-            PreparedStatement recentStmt = conn.prepareStatement("SELECT * FROM employees ORDER BY id DESC LIMIT 5");
-            ResultSet recentRs = recentStmt.executeQuery();
-            while (recentRs.next()) {
-                String[] emp = {
-                    String.valueOf(recentRs.getInt("id")),
-                    recentRs.getString("name"),
-                    recentRs.getString("email"),
-                    recentRs.getString("position")
-                };
-                recentEmployees.add(emp);
-            }
-
-            // Set attributes
-            request.setAttribute("totalEmployees", totalEmployees);
             request.setAttribute("roleCount", roleCount);
-            request.setAttribute("recentEmployees", recentEmployees);
 
-            RequestDispatcher dispatcher = request.getRequestDispatcher("dashboard.jsp");
-            dispatcher.forward(request, response);
+            // 3. Get recent employees
+            stmt = conn.prepareStatement("SELECT name, position, join_date FROM employees ORDER BY join_date DESC LIMIT 5");
+            rs = stmt.executeQuery();
+            List<Employee> recentEmployees = new ArrayList<>();
+            while (rs.next()) {
+                recentEmployees.add(new Employee(
+                        rs.getString("name"),
+                        rs.getString("position"),
+                        rs.getString("join_date")
+                ));
+            }
+            request.setAttribute("recentEmployees", recentEmployees);
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.getWriter().println("Error: " + e.getMessage());
+        } finally {
+            try { if (rs != null) rs.close(); } catch (Exception ignored) {}
+            try { if (stmt != null) stmt.close(); } catch (Exception ignored) {}
+            try { if (conn != null) conn.close(); } catch (Exception ignored) {}
         }
+
+        // Forward to JSP
+        request.getRequestDispatcher("dashboard.jsp").forward(request, response);
     }
 }

@@ -132,7 +132,7 @@
 <body>
     <div class="sidebar">
         <ul>
-            <li><a href="dashboard.jsp">🏠 Dashboard</a></li>
+            <li><a href="DashboardServlet">🏠 Dashboard</a></li>
             <li><a href="add-employee.jsp">👨‍💼 Add Employee</a></li>
             <li><a href="EmployeeListServlet">📂 Manage Employees</a></li>
             <li><a href="LogoutServlet">🚪 Logout</a></li>

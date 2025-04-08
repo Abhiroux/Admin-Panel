@@ -1,13 +1,16 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ page import="javax.servlet.http.HttpSession" %>
-
+<%@ page import="java.util.*, model.Employee" %>
 <%
     if (session.getAttribute("adminEmail") == null) { 
         response.sendRedirect("index.jsp");
         return;
     }
+
     String adminName = (String) session.getAttribute("adminName");
     String adminEmail = (String) session.getAttribute("adminEmail");
+    Integer totalEmployees = (Integer) request.getAttribute("totalEmployees");
+    Map<String, Integer> roleCount = (Map<String, Integer>) request.getAttribute("roleCount");
+    List<Employee> recentEmployees = (List<Employee>) request.getAttribute("recentEmployees");
 %>
 
 <!DOCTYPE html>
@@ -20,6 +23,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -105,7 +110,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <ul>
-            <li><a href="/Admin_Management_System/dashboard.jsp">🏠 Dashboard</a></li>
+            <li><a href="DashboardServlet">🏠 Dashboard</a></li>
             <li><a href="add-employee.jsp">👨‍💼 Add Employee</a></li>
             <li><a href="EmployeeListServlet">📂 Manage Employees</a></li>
             <li><a href="LogoutServlet">🚪 Logout</a></li>
@@ -117,31 +122,47 @@
 
     <!-- Main Content -->
     <div class="content">
+     <div class="container mt-4">
         <h2>Welcome, <%= adminName %></h2>
-        <p>Manage employees, view records, and perform administrative tasks.</p>
+        <p>Email: <%= adminEmail %></p>
 
-        <!-- Dashboard Content -->
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card mb-4">
+        <div class="row my-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">Manage Employees</h5>
-                        <p class="card-text">Add, update, or delete employee records.</p>
-                        <a href="add-employee.jsp" class="btn btn-dark">Add Employee</a>
-                        <a href="EmployeeListServlet" class="btn btn-warning">View / Update / Delete</a>
+                        <h5>Total Employees</h5>
+                        <p style="font-size: 24px;"><%= totalEmployees != null ? totalEmployees : 0 %></p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Profile</h5>
-                        <p class="card-text">Name: <%= adminName %></p>
-                        <p class="card-text">Email: <%= adminEmail %></p>
-                    </div>
-                </div>
-            </div>
+           <div class="col-md-8 d-flex justify-content-center">
+             <canvas id="roleChart" style="width: 450px; height: 450px;"></canvas>
+           </div>
+
         </div>
+
+        <h4>Recently Added Employees</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr><th>Name</th><th>Role</th><th>Join Date</th></tr>
+            </thead>
+            <tbody>
+                <% if (recentEmployees != null && !recentEmployees.isEmpty()) {
+                    for (Employee emp : recentEmployees) { %>
+                        <tr>
+                            <td><%= emp.getName() %></td>
+                            <td><%= emp.getPosition() %></td>
+                            <td><%= emp.getJoinDate() %></td>
+                        </tr>
+                <%  } 
+                } else { %>
+                    <tr><td colspan="3">No recent employees found.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    <a href="EmployeeListServlet" class="btn btn-outline-primary mt-2">See All Employees</a>
+
+    </div>
     </div>
 
     <!-- Bootstrap JS -->
@@ -153,6 +174,46 @@
             document.querySelector('.sidebar').classList.toggle('active');
             document.querySelector('.content').classList.toggle('active');
         });
+        
+        const ctx = document.getElementById('roleChart').getContext('2d');
+const roleChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: [<%
+            if (roleCount != null) {
+                int i = 0;
+                for (String role : roleCount.keySet()) {
+                    out.print("\"" + role + "\"");
+                    if (++i < roleCount.size()) out.print(", ");
+                }
+            }
+        %>],
+        datasets: [{
+            label: 'Role Distribution',
+            data: [<%
+                if (roleCount != null) {
+                    int i = 0;
+                    for (Integer count : roleCount.values()) {
+                        out.print(count);
+                        if (++i < roleCount.size()) out.print(", ");
+                    }
+                }
+            %>],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.6)',
+                'rgba(54, 162, 235, 0.6)',
+                'rgba(255, 206, 86, 0.6)',
+                'rgba(75, 192, 192, 0.6)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: false,
+        maintainAspectRatio: false
+    }
+});
+
     </script>
 
 </body>

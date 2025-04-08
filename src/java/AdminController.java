@@ -36,7 +36,7 @@ public class AdminController extends HttpServlet {
                 HttpSession session = request.getSession();
                 session.setAttribute("adminName", rs.getString("Name"));
                 session.setAttribute("adminEmail", rs.getString("email"));
-                response.sendRedirect("dashboard.jsp");
+                response.sendRedirect("DashboardServlet");
 //                out.println("Logged in Successfully");
                 return;
             }else{
