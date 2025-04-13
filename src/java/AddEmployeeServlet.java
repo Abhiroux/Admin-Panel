@@ -16,13 +16,17 @@ public class AddEmployeeServlet extends HttpServlet {
         String email = request.getParameter("email");
         String position = request.getParameter("position");
         double salary = Double.parseDouble(request.getParameter("salary"));
+        
+        String defaultPassword = "employee@123";  // or user input
+        String hashedPassword = PasswordUtil.hashPassword(defaultPassword);
 
         try (Connection conn = DatabaseConnection.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO employees (name, email, position, salary) VALUES (?, ?, ?, ?)");
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO employees (name, email, position, salary, password) VALUES (?, ?, ?, ?, ?)");
             ps.setString(1, name);
             ps.setString(2, email);
             ps.setString(3, position);
             ps.setDouble(4, salary);
+            ps.setString(5, hashedPassword);
             ps.executeUpdate();
             response.sendRedirect("EmployeeListServlet");
         } catch (Exception e) {

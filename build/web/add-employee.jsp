@@ -133,6 +133,9 @@
     <div class="sidebar">
         <ul>
             <li><a href="DashboardServlet">🏠 Dashboard</a></li>
+            <li><a href="AssignTask.jsp">📝 Assign Task</a></li>
+            <li><a href="PostAnnouncement.jsp">📢 Post Announcement</a></li>
+            <li><a href="ManageLeaves.jsp">✅ Manage Leaves</a></li>
             <li><a href="add-employee.jsp">👨‍💼 Add Employee</a></li>
             <li><a href="EmployeeListServlet">📂 Manage Employees</a></li>
             <li><a href="LogoutServlet">🚪 Logout</a></li>

@@ -103,6 +103,15 @@
         .sidebar.active ~ .content {
             margin-left: 250px;
         }
+        footer {
+            background-color: #212529;
+            color: #ffffff;
+            text-align: center;
+            padding: 10px 0;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+        }
     </style>
 </head>
 <body>
@@ -111,6 +120,9 @@
     <div class="sidebar">
         <ul>
             <li><a href="DashboardServlet">🏠 Dashboard</a></li>
+            <li><a href="AssignTask.jsp">📝 Assign Task</a></li>
+            <li><a href="PostAnnouncement.jsp">📢 Post Announcement</a></li>
+            <li><a href="ManageLeaves.jsp">✅ Manage Leaves</a></li>
             <li><a href="add-employee.jsp">👨‍💼 Add Employee</a></li>
             <li><a href="EmployeeListServlet">📂 Manage Employees</a></li>
             <li><a href="LogoutServlet">🚪 Logout</a></li>
@@ -160,10 +172,13 @@
                 <% } %>
             </tbody>
         </table>
-    <a href="EmployeeListServlet" class="btn btn-outline-primary mt-2">See All Employees</a>
+    <a href="EmployeeListServlet" class="btn btn-outline-dark mt-2">See All Employees</a>
 
     </div>
     </div>
+            <footer>
+    <p>&copy; 2025 Your Company. All Rights Reserved.</p>
+</footer>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
